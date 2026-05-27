@@ -1,0 +1,69 @@
+<div class="page-container">
+  <div class="page-hero">
+    <h1><i class="pi pi-shop"></i> ร้านอาหารทั้งหมด</h1>
+    <p>เลือกร้านที่คุณชื่นชอบแล้วสั่งอาหารได้เลย</p>
+  </div>
+
+  @if (error) {
+    <div class="alert alert-error"><i class="pi pi-exclamation-circle"></i> {{ error }}</div>
+  }
+
+  <!-- Skeleton loading -->
+  @if (loading) {
+    <div class="restaurant-grid">
+      @for (s of skeletons; track $index) {
+        <div class="restaurant-card-skeleton">
+          <div class="skeleton" style="height:160px;border-radius:12px 12px 0 0"></div>
+          <div style="padding:1rem">
+            <div class="skeleton" style="width:60%;height:1.2rem;margin-bottom:.5rem"></div>
+            <div class="skeleton" style="width:40%;height:.9rem;margin-bottom:.8rem"></div>
+            <div class="skeleton" style="height:2.4rem;border-radius:8px"></div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @if (!loading && !error) {
+    <div class="restaurant-grid">
+      @for (r of restaurants; track r.id) {
+        <div class="restaurant-card" [class.closed]="!r.isOpen">
+          <div class="restaurant-card-header {{ getCategoryClass(r.category) }}">
+            <i [class]="'pi ' + categoryIcon(r.category)" class="cat-icon"></i>
+            <span class="cat-label">{{ r.category }}</span>
+            @if (!r.isOpen) { <span class="closed-badge">ปิด</span> }
+          </div>
+
+          <div class="restaurant-card-body">
+            <h3>{{ r.name }}</h3>
+            <p class="restaurant-desc">{{ r.description }}</p>
+
+            <div class="restaurant-meta">
+              <div class="stars">
+                @for (s of ratingStars(r.rating); track $index) {
+                  <i class="pi pi-star-fill" style="color:#f59e0b;font-size:.85rem"></i>
+                }
+                <span class="rating-num">{{ r.rating }}</span>
+              </div>
+              <div class="meta-row">
+                <span><i class="pi pi-clock"></i> {{ r.openTime }}</span>
+                <span><i class="pi pi-list"></i> {{ r.menuItemCount }} เมนู</span>
+              </div>
+            </div>
+
+            <a [routerLink]="['/restaurants', r.id]"
+              class="btn btn-primary btn-full mt-2"
+              [class.btn-disabled]="!r.isOpen">
+              ดูเมนู <i class="pi pi-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+      } @empty {
+        <div class="empty-state">
+          <i class="pi pi-inbox" style="font-size:3rem;color:#cbd5e1"></i>
+          <p>ไม่มีร้านอาหาร</p>
+        </div>
+      }
+    </div>
+  }
+</div>

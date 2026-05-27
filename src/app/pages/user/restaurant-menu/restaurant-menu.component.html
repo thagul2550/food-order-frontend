@@ -1,0 +1,100 @@
+<!-- Toast แจ้งเตือนเพิ่มของลงตะกร้า -->
+@if (addedItem) {
+  <div class="toast toast-success">
+    <i class="pi pi-check-circle"></i> เพิ่ม "{{ addedItem }}" ลงตะกร้าแล้ว
+  </div>
+}
+
+<div class="page-container">
+  @if (loading) {
+    <div style="padding:2rem">
+      <div class="skeleton" style="width:40%;height:2rem;margin-bottom:.5rem"></div>
+      <div class="skeleton" style="width:60%;height:1rem;margin-bottom:1.5rem"></div>
+      @for (s of [1,2,3,4]; track s) {
+        <div class="skeleton" style="height:80px;margin-bottom:.5rem;border-radius:10px"></div>
+      }
+    </div>
+  }
+
+  @if (error) {
+    <div class="alert alert-error"><i class="pi pi-exclamation-circle"></i> {{ error }}</div>
+  }
+
+  @if (restaurant && !loading) {
+    <div class="menu-restaurant-header">
+      <a routerLink="/restaurants" class="back-link">
+        <i class="pi pi-arrow-left"></i> กลับ
+      </a>
+      <div class="restaurant-info">
+        <h1>{{ restaurant.name }}</h1>
+        <p class="restaurant-desc">{{ restaurant.description }}</p>
+        <div class="restaurant-badges">
+          <span class="badge-pill badge-cat">{{ restaurant.category }}</span>
+          <span class="badge-pill"><i class="pi pi-clock"></i> {{ restaurant.openTime }}</span>
+          <span class="badge-pill"><i class="pi pi-star-fill" style="color:#f59e0b"></i> {{ restaurant.rating }}</span>
+        </div>
+      </div>
+
+      @if (!cart.isEmpty()) {
+        <a routerLink="/cart" class="cart-chip">
+          <i class="pi pi-shopping-cart"></i>
+          <span>{{ cart.totalItems() }} รายการ</span>
+          <strong>฿{{ cart.totalPrice() | number:'1.0-0' }}</strong>
+          <i class="pi pi-arrow-right"></i>
+        </a>
+      }
+    </div>
+
+    @for (cat of categories; track cat) {
+      <div class="menu-section">
+        <div class="menu-section-title">
+          <i [class]="categoryIcon(cat)"></i>
+          <span>{{ cat }}</span>
+        </div>
+        <div class="menu-items-grid">
+          @for (item of groupedMenu[cat]; track item.id) {
+            <div class="menu-item-card" [class.unavailable]="!item.isAvailable">
+              <div class="menu-item-info">
+                <div class="menu-item-name">{{ item.name }}</div>
+                <div class="menu-item-desc">{{ item.description }}</div>
+                <div class="menu-item-price">฿{{ item.price | number:'1.0-0' }}</div>
+              </div>
+              <div class="menu-item-action">
+                @if (cart.getQuantity(item.id) > 0) {
+                  <div class="qty-control">
+                    <button class="qty-btn" (click)="cart.decreaseItem(item.id)">
+                      <i class="pi pi-minus"></i>
+                    </button>
+                    <span class="qty-num">{{ cart.getQuantity(item.id) }}</span>
+                    <button class="qty-btn" (click)="addToCart(item)">
+                      <i class="pi pi-plus"></i>
+                    </button>
+                  </div>
+                } @else {
+                  <button class="btn-icon-round"
+                    [disabled]="!item.isAvailable"
+                    (click)="addToCart(item)"
+                    [title]="item.isAvailable ? 'เพิ่มลงตะกร้า' : 'หมด'">
+                    <i class="pi pi-plus"></i>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    @if (!cart.isEmpty()) {
+      <div class="floating-cart">
+        <div class="floating-cart-info">
+          <span>{{ cart.totalItems() }} รายการ</span>
+          <span>฿{{ cart.totalPrice() | number:'1.0-0' }}</span>
+        </div>
+        <a routerLink="/cart" class="floating-cart-btn">
+          ดูตะกร้า <i class="pi pi-arrow-right"></i>
+        </a>
+      </div>
+    }
+  }
+</div>

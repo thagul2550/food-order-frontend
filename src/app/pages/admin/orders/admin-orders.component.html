@@ -1,0 +1,188 @@
+<!-- Toast inline -->
+@if (toastMsg) {
+  <div class="toast" [class.toast-success]="toastType==='success'" [class.toast-error]="toastType==='error'">
+    <i [class]="toastType==='success' ? 'pi pi-check-circle' : 'pi pi-times-circle'"></i>
+    {{ toastMsg }}
+  </div>
+}
+
+<!-- Cancel Modal -->
+@if (showCancelDialog) {
+  <div class="modal-overlay" (click)="showCancelDialog = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>ยกเลิกคำสั่งซื้อ #{{ selectedOrder?.id }}</h3>
+        <button class="modal-close" (click)="showCancelDialog = false">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p style="color:#64748b;margin-bottom:1rem">
+          กรุณาระบุเหตุผลการยกเลิก Order ของ <strong>{{ selectedOrder?.userName }}</strong>
+        </p>
+        <form [formGroup]="cancelForm">
+          <div class="field">
+            <label>เหตุผล <span class="required">*</span></label>
+            <textarea class="form-input form-textarea" formControlName="reason" rows="3"
+              placeholder="เช่น ร้านปิดชั่วคราว, วัตถุดิบหมด..."
+              [class.input-error]="cancelForm.get('reason')?.invalid && cancelForm.get('reason')?.touched">
+            </textarea>
+            @if (cancelForm.get('reason')?.invalid && cancelForm.get('reason')?.touched) {
+              <small class="field-error">กรุณากรอกเหตุผลอย่างน้อย 5 ตัวอักษร</small>
+            }
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" [disabled]="cancelling" (click)="showCancelDialog = false">
+          ยกเลิก
+        </button>
+        <button class="btn btn-danger" [disabled]="cancelling" (click)="confirmCancel()">
+          @if (cancelling) { <span class="btn-spinner"></span> }
+          <i class="pi pi-times"></i> ยืนยันยกเลิก
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Status Modal -->
+@if (showStatusDialog) {
+  <div class="modal-overlay" (click)="showStatusDialog = false">
+    <div class="modal" style="max-width:360px" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>เปลี่ยนสถานะ Order #{{ selectedOrder?.id }}</h3>
+        <button class="modal-close" (click)="showStatusDialog = false">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label>สถานะใหม่</label>
+          <select class="form-input form-select" [(ngModel)]="newStatus">
+            @for (opt of statusOptions; track opt.value) {
+              <option [value]="opt.value">{{ opt.label }}</option>
+            }
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="showStatusDialog = false">ยกเลิก</button>
+        <button class="btn btn-primary" [disabled]="updatingStatus" (click)="confirmStatusChange()">
+          @if (updatingStatus) { <span class="btn-spinner"></span> }
+          <i class="pi pi-save"></i> บันทึก
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<div class="page-container">
+  <div class="page-header-row">
+    <h2 class="page-title"><i class="pi pi-shield"></i> จัดการคำสั่งซื้อ (Admin)</h2>
+    <button class="btn btn-secondary btn-sm" (click)="loadOrders()">
+      <i class="pi pi-refresh"></i> รีโหลด
+    </button>
+  </div>
+
+  @if (!loading) {
+    <div class="stat-grid">
+      <div class="stat-card stat-total">
+        <div class="stat-number">{{ orders.length }}</div>
+        <div class="stat-label">ทั้งหมด</div>
+      </div>
+      <div class="stat-card stat-pending">
+        <div class="stat-number">{{ count('Pending') }}</div>
+        <div class="stat-label">รอดำเนินการ</div>
+      </div>
+      <div class="stat-card stat-preparing">
+        <div class="stat-number">{{ count('Preparing') }}</div>
+        <div class="stat-label">กำลังเตรียม</div>
+      </div>
+      <div class="stat-card stat-ready">
+        <div class="stat-number">{{ count('Ready') }}</div>
+        <div class="stat-label">พร้อมเสิร์ฟ</div>
+      </div>
+      <div class="stat-card stat-delivered">
+        <div class="stat-number">{{ count('Delivered') }}</div>
+        <div class="stat-label">ส่งแล้ว</div>
+      </div>
+      <div class="stat-card stat-revenue">
+        <div class="stat-number">฿{{ totalRevenue() | number:'1.0-0' }}</div>
+        <div class="stat-label">รายรับรวม</div>
+      </div>
+    </div>
+  }
+
+  @if (error) {
+    <div class="alert alert-error"><i class="pi pi-exclamation-circle"></i> {{ error }}</div>
+  }
+
+  @if (loading) {
+    <div class="skeleton" style="height:300px;border-radius:12px"></div>
+  }
+
+  @if (!loading) {
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>ลูกค้า</th>
+            <th>ร้าน</th>
+            <th>รายการอาหาร</th>
+            <th>ราคารวม</th>
+            <th>สถานะ</th>
+            <th>วันที่สั่ง</th>
+            <th>จัดการ</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (order of orders; track order.id) {
+            <tr [class.row-cancelled]="order.status === 'Cancelled'">
+              <td><strong>#{{ order.id }}</strong></td>
+              <td>{{ order.userName }}</td>
+              <td><i class="pi pi-shop" style="color:#6366f1;margin-right:4px"></i>{{ order.restaurantName }}</td>
+              <td>
+                <div class="admin-item-list">
+                  @for (item of order.items; track item.menuItemId) {
+                    <div class="admin-item-row">
+                      <span>{{ item.menuItemName }}</span>
+                      <span class="admin-item-qty">×{{ item.quantity }}</span>
+                    </div>
+                  }
+                </div>
+              </td>
+              <td><strong class="total-price">฿{{ order.totalPrice | number:'1.0-0' }}</strong></td>
+              <td>
+                <span class="badge badge-{{ statusSeverity(order.status) }}">
+                  {{ statusLabels[order.status] }}
+                </span>
+                @if (order.status === 'Cancelled' && order.cancelReason) {
+                  <div class="cancel-reason-small">{{ order.cancelReason }}</div>
+                }
+              </td>
+              <td>{{ order.createdAt | date:'dd/MM/yy HH:mm' }}</td>
+              <td>
+                <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+                  @if (order.status !== 'Cancelled' && order.status !== 'Delivered') {
+                    <button class="btn btn-info btn-sm btn-icon" title="เปลี่ยนสถานะ"
+                      (click)="openStatusDialog(order)">
+                      <i class="pi pi-pencil"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm btn-icon" title="ยกเลิก"
+                      (click)="openCancelDialog(order)">
+                      <i class="pi pi-times"></i>
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="8" class="empty-state">ยังไม่มีคำสั่งซื้อ</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

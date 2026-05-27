@@ -1,0 +1,85 @@
+<div class="page-container">
+  <div class="page-header-row">
+    <h2 class="page-title"><i class="pi pi-receipt"></i> คำสั่งซื้อของฉัน</h2>
+    <a routerLink="/restaurants" class="btn btn-secondary btn-sm">
+      <i class="pi pi-plus"></i> สั่งอาหารเพิ่ม
+    </a>
+  </div>
+
+  @if (loading) {
+    @for (s of [1,2]; track s) {
+      <div class="skeleton" style="height:120px;margin-bottom:1rem;border-radius:12px"></div>
+    }
+  }
+  @if (error) {
+    <div class="alert alert-error"><i class="pi pi-exclamation-circle"></i> {{ error }}</div>
+  }
+
+  @if (!loading && orders.length === 0) {
+    <div class="empty-cart">
+      <i class="pi pi-receipt" style="font-size:3.5rem;color:#cbd5e1"></i>
+      <h3>ยังไม่มีคำสั่งซื้อ</h3>
+      <a routerLink="/restaurants" class="btn btn-primary">
+        <i class="pi pi-shop"></i> เลือกร้านอาหาร
+      </a>
+    </div>
+  }
+
+  @for (order of orders; track order.id) {
+    <div class="order-card" [class.order-cancelled]="order.status === 'Cancelled'">
+      <div class="order-card-header">
+        <div class="order-card-title">
+          <span class="order-id">#{{ order.id }}</span>
+          <span class="order-restaurant">
+            <i class="pi pi-shop"></i> {{ order.restaurantName }}
+          </span>
+        </div>
+        <div class="order-card-meta">
+          <span class="badge badge-{{ statusSeverity(order.status) }}">
+            {{ statusLabels[order.status] }}
+          </span>
+          <span class="order-date">{{ order.createdAt | date:'dd/MM/yy HH:mm' }}</span>
+        </div>
+      </div>
+
+      @if (order.status !== 'Cancelled') {
+        <div class="status-progress">
+          @for (step of statusSteps; track step; let i = $index) {
+            <div class="status-step"
+              [class.done]="currentStep(order.status) >= i"
+              [class.active]="currentStep(order.status) === i">
+              <div class="step-dot"><i [class]="stepIcon(step)"></i></div>
+              <span class="step-label">{{ statusLabels[step] }}</span>
+            </div>
+            @if (i < statusSteps.length - 1) {
+              <div class="step-line" [class.done]="currentStep(order.status) > i"></div>
+            }
+          }
+        </div>
+      }
+
+      @if (order.status === 'Cancelled' && order.cancelReason) {
+        <div class="cancel-reason">
+          <i class="pi pi-info-circle"></i>
+          เหตุผลการยกเลิก: {{ order.cancelReason }}
+        </div>
+      }
+
+      <div class="order-items-list">
+        @for (item of order.items; track item.menuItemId) {
+          <div class="order-item-row">
+            <span>{{ item.menuItemName }}</span>
+            <span class="order-item-qty">× {{ item.quantity }}</span>
+            <span class="order-item-price">฿{{ item.subtotal | number:'1.0-0' }}</span>
+          </div>
+        }
+      </div>
+
+      <hr class="summary-divider" />
+      <div class="order-total-row">
+        <span>รวมทั้งหมด</span>
+        <strong class="total-price">฿{{ order.totalPrice | number:'1.0-0' }}</strong>
+      </div>
+    </div>
+  }
+</div>

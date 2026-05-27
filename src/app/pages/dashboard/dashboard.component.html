@@ -1,0 +1,59 @@
+<div class="page-container">
+  <div class="page-header-row">
+    <h2 class="page-title"><i class="pi pi-chart-bar"></i> Dashboard สรุปคำสั่งซื้อ</h2>
+    <p-button label="ดูรายการทั้งหมด" icon="pi pi-list" routerLink="/orders" />
+  </div>
+
+  @if (loading) {
+    <div class="spinner-center"><p-progressspinner strokeWidth="4" /></div>
+  }
+  @if (error) {
+    <p-message severity="error" [text]="error" styleClass="mb-3" />
+  }
+
+  @if (summary) {
+    <div class="stat-grid">
+      @for (card of statCards(); track card.label) {
+        <p-card styleClass="stat-card">
+          <div class="stat-inner">
+            <div class="stat-icon" [style.background]="card.color + '1a'">
+              <i [class]="card.icon" [style.color]="card.color" style="font-size:1.6rem"></i>
+            </div>
+            <div class="stat-text">
+              <div class="stat-number">{{ card.value }}</div>
+              <div class="stat-label">{{ card.label }}</div>
+            </div>
+          </div>
+        </p-card>
+      }
+    </div>
+
+    <p-card>
+      <ng-template #title>
+        <span><i class="pi pi-chart-pie" style="margin-right:0.5rem"></i>คำสั่งซื้อแยกตามประเภทอาหาร</span>
+      </ng-template>
+
+      @if (summary.ordersByType.length === 0) {
+        <p style="color:#9ca3af">ยังไม่มีข้อมูล</p>
+      }
+
+      <div class="type-list">
+        @for (item of summary.ordersByType; track item.type) {
+          <div class="type-row">
+            <span class="type-name">
+              <p-tag [value]="item.type" severity="secondary" />
+            </span>
+            <div class="type-bar-wrap">
+              <p-progressbar
+                [value]="barValue(item.count)"
+                [showValue]="false"
+                styleClass="type-bar"
+              />
+            </div>
+            <span class="type-count">{{ item.count }} รายการ ({{ barValue(item.count) }}%)</span>
+          </div>
+        }
+      </div>
+    </p-card>
+  }
+</div>

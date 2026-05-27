@@ -1,0 +1,54 @@
+<!-- Navbar — แสดงเมื่อ login แล้ว -->
+@if (auth.isLoggedIn()) {
+  <nav class="navbar">
+    <div class="navbar-brand" routerLink="/restaurants">
+      <i class="pi pi-shop" style="color:#f97316;font-size:1.6rem"></i>
+      <span style="font-weight: 800; font-size: 1.2rem; background: linear-gradient(135deg, #f97316, #ea580c); -webkit-background-clip: text; color: transparent;">FoodOrder</span>
+    </div>
+
+    <div class="navbar-links">
+      <!-- User menu -->
+      @if (auth.isUser()) {
+        <a routerLink="/restaurants" routerLinkActive="nav-active">
+          <i class="pi pi-shop"></i> ร้านอาหาร
+        </a>
+        <a routerLink="/my-orders" routerLinkActive="nav-active">
+          <i class="pi pi-receipt"></i> คำสั่งซื้อของฉัน
+        </a>
+        <!-- Cart icon with badge -->
+        <a routerLink="/cart" class="cart-nav-link" routerLinkActive="nav-active">
+          <i class="pi pi-shopping-cart"></i>
+          @if (cart.totalItems() > 0) {
+            <span class="cart-nav-badge">{{ cart.totalItems() }}</span>
+          }
+          <span>ตะกร้า</span>
+        </a>
+      }
+
+      <!-- Admin menu -->
+      @if (auth.isAdmin()) {
+        <a routerLink="/admin/orders" routerLinkActive="nav-active">
+          <i class="pi pi-list"></i> คำสั่งซื้อทั้งหมด
+        </a>
+      }
+    </div>
+
+    <!-- User avatar + logout -->
+    <div class="navbar-user">
+      <div class="user-info">
+        <div class="user-avatar">{{ userInitial }}</div>
+        <div class="user-detail">
+          <span class="user-name">{{ auth.user()?.fullName }}</span>
+          <span class="user-role">{{ auth.isAdmin() ? 'Admin' : 'User' }}</span>
+        </div>
+      </div>
+      <button class="logout-btn" (click)="auth.logout()" title="ออกจากระบบ">
+        <i class="pi pi-sign-out"></i>
+      </button>
+    </div>
+  </nav>
+}
+
+<main [class.with-navbar]="auth.isLoggedIn()">
+  <router-outlet />
+</main>

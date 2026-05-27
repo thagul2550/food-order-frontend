@@ -1,0 +1,84 @@
+<div class="page-container">
+  <div class="page-header-row">
+    <h2 class="page-title"><i class="pi pi-plus-circle"></i> สร้างคำสั่งซื้อใหม่</h2>
+    <a routerLink="/order-list" class="btn btn-secondary btn-sm">
+      <i class="pi pi-list"></i> ดูคำสั่งซื้อทั้งหมด
+    </a>
+  </div>
+
+  @if (loading) {
+    <div class="skeleton" style="height:400px;border-radius:12px"></div>
+  }
+
+  @if (!loading) {
+    <div class="card" style="max-width:600px;margin:0 auto">
+      <h3 class="card-title" style="margin-bottom:1.5rem">
+        <i class="pi pi-file-edit" style="color:#6366f1"></i> รายละเอียดคำสั่งซื้อ
+      </h3>
+
+      <form [formGroup]="form">
+
+        <!-- เลือกร้านอาหาร -->
+        <div class="field">
+          <label>ร้านอาหาร <span class="required">*</span></label>
+          <select class="form-input form-select" formControlName="restaurantId"
+            (change)="onRestaurantChange()"
+            [class.input-error]="isInvalid('restaurantId')">
+            <option [ngValue]="null" disabled>— เลือกร้านอาหาร —</option>
+            @for (r of restaurants; track r.id) {
+              <option [value]="r.id">{{ r.name }} ({{ r.category }})</option>
+            }
+          </select>
+          @if (isInvalid('restaurantId')) {
+            <small class="field-error">กรุณาเลือกร้านอาหาร</small>
+          }
+        </div>
+
+        <!-- ชื่อ Order (Title) — Required field ตาม Requirement -->
+        <div class="field">
+          <label>ชื่อคำสั่งซื้อ (Title) <span class="required">*</span></label>
+          <input class="form-input" type="text" formControlName="title"
+            placeholder="เช่น สั่งอาหารกลางวัน, งานเลี้ยงบริษัท..."
+            [class.input-error]="isInvalid('title')" />
+          @if (isInvalid('title')) {
+            <small class="field-error">กรุณาใส่ชื่อคำสั่งซื้ออย่างน้อย 3 ตัวอักษร</small>
+          }
+        </div>
+
+        <!-- หมายเหตุ (Description) — Required field ตาม Requirement -->
+        <div class="field">
+          <label>หมายเหตุ / คำขอพิเศษ (Description)</label>
+          <textarea class="form-input form-textarea" formControlName="description" rows="3"
+            placeholder="เช่น ไม่ใส่ผัก, ลดเผ็ด, แพ้อาหารทะเล...">
+          </textarea>
+        </div>
+
+        <!-- ประเภทการรับอาหาร (Type/Priority) — Required field ตาม Requirement -->
+        <div class="field">
+          <label>ประเภทการรับอาหาร (Type) <span class="required">*</span></label>
+          <div class="role-toggle">
+            @for (t of orderTypes; track t.value) {
+              <button type="button"
+                [class.active]="form.value.orderType === t.value"
+                (click)="form.patchValue({ orderType: t.value })">
+                {{ t.label }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <hr class="summary-divider" />
+
+        <button class="btn btn-primary btn-full" type="button"
+          (click)="goToMenu()">
+          <i class="pi pi-arrow-right"></i> เลือกเมนูอาหาร
+        </button>
+
+        <p style="text-align:center;color:#94a3b8;font-size:.85rem;margin-top:.75rem">
+          <i class="pi pi-info-circle"></i>
+          หลังจากเลือกเมนูแล้ว ไปที่ตะกร้าเพื่อยืนยันคำสั่งซื้อ
+        </p>
+      </form>
+    </div>
+  }
+</div>

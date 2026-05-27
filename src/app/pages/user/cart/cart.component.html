@@ -1,0 +1,97 @@
+<div class="page-container">
+  <div class="page-header-row">
+    <h2 class="page-title"><i class="pi pi-shopping-cart"></i> ตะกร้าสินค้า</h2>
+    <a routerLink="/restaurants" class="back-link">
+      <i class="pi pi-arrow-left"></i> เลือกเมนูเพิ่ม
+    </a>
+  </div>
+
+  @if (successMsg) {
+    <div class="alert alert-success"><i class="pi pi-check-circle"></i> {{ successMsg }}</div>
+  }
+  @if (errorMsg) {
+    <div class="alert alert-error"><i class="pi pi-exclamation-circle"></i> {{ errorMsg }}</div>
+  }
+
+  @if (cart.isEmpty()) {
+    <div class="empty-cart">
+      <i class="pi pi-shopping-cart" style="font-size:4rem;color:#cbd5e1"></i>
+      <h3>ตะกร้าว่างเปล่า</h3>
+      <p>เลือกร้านอาหารและเพิ่มเมนูที่ต้องการ</p>
+      <a routerLink="/restaurants" class="btn btn-primary">
+        <i class="pi pi-shop"></i> เลือกร้านอาหาร
+      </a>
+    </div>
+  }
+
+  @if (!cart.isEmpty()) {
+    <div class="cart-layout">
+      <!-- รายการในตะกร้า -->
+      <div class="card">
+        <div class="card-title">
+          <i class="pi pi-shop" style="color:#6366f1"></i>
+          {{ cart.currentRestaurantName() }}
+        </div>
+
+        <div class="cart-item-list">
+          @for (item of cart.cartItems(); track item.menuItemId) {
+            <div class="cart-item">
+              <div class="cart-item-info">
+                <div class="cart-item-name">{{ item.menuItemName }}</div>
+                <div class="cart-item-price">฿{{ item.price | number:'1.0-0' }} / ชิ้น</div>
+              </div>
+              <div class="qty-control">
+                <button class="qty-btn" (click)="cart.decreaseItem(item.menuItemId)">
+                  <i class="pi pi-minus"></i>
+                </button>
+                <span class="qty-num">{{ item.quantity }}</span>
+                <button class="qty-btn" (click)="cart.increaseItem(item.menuItemId)">
+                  <i class="pi pi-plus"></i>
+                </button>
+              </div>
+              <div class="cart-item-subtotal">฿{{ item.subtotal | number:'1.0-0' }}</div>
+              <button class="remove-btn" (click)="cart.removeItem(item.menuItemId)" title="ลบ">
+                <i class="pi pi-times"></i>
+              </button>
+            </div>
+          }
+        </div>
+
+        <button class="btn btn-secondary btn-sm mt-2" (click)="cart.clearCart()">
+          <i class="pi pi-trash"></i> ล้างตะกร้า
+        </button>
+      </div>
+
+      <!-- สรุปราคา -->
+      <div class="card cart-summary-card">
+        <div class="card-title">สรุปคำสั่งซื้อ</div>
+
+        <div class="summary-rows">
+          @for (item of cart.cartItems(); track item.menuItemId) {
+            <div class="summary-row">
+              <span>{{ item.menuItemName }} × {{ item.quantity }}</span>
+              <span>฿{{ item.subtotal | number:'1.0-0' }}</span>
+            </div>
+          }
+        </div>
+
+        <hr class="summary-divider" />
+
+        <div class="summary-total">
+          <span>รวมทั้งหมด</span>
+          <strong class="total-price">฿{{ cart.totalPrice() | number:'1.0-0' }}</strong>
+        </div>
+
+        <button class="btn btn-primary btn-full btn-lg mt-3"
+          [disabled]="submitting" (click)="placeOrder()">
+          @if (submitting) { <span class="btn-spinner"></span> }
+          <i class="pi pi-check-circle"></i> ยืนยันสั่งอาหาร
+        </button>
+
+        <p class="cart-note">
+          <i class="pi pi-info-circle"></i> ราคารวม VAT แล้ว ไม่มีค่าจัดส่ง
+        </p>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,71 @@
+<div class="auth-split-layout">
+  <div class="auth-banner banner-login">
+    <div class="banner-content">
+      <h1>FoodOrder</h1>
+      <p>ยินดีต้อนรับกลับสู่ระบบสั่งอาหารที่อร่อยที่สุด</p>
+    </div>
+  </div>
+  <div class="auth-container">
+    <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-logo">
+        <i class="pi pi-server"></i>
+      </div>
+      <h2>เข้าสู่ระบบ</h2>
+      <p class="auth-subtitle">Food Order System</p>
+    </div>
+
+    @if (error) {
+      <div class="alert alert-error">
+        <i class="pi pi-exclamation-circle"></i> {{ error }}
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
+      <div class="field">
+        <label for="email">อีเมล</label>
+        <input id="email" type="email" class="form-input"
+          formControlName="email" placeholder="your@email.com"
+          [class.input-error]="isInvalid('email')" />
+        @if (isInvalid('email')) {
+          <small class="field-error">กรุณากรอกอีเมลให้ถูกต้อง</small>
+        }
+      </div>
+
+      <div class="field">
+        <label for="password">รหัสผ่าน</label>
+        <div class="input-with-icon">
+          <input id="password" [type]="showPassword ? 'text' : 'password'"
+            class="form-input" formControlName="password"
+            placeholder="รหัสผ่าน" [class.input-error]="isInvalid('password')" />
+          <button type="button" class="input-icon-btn"
+            (click)="showPassword = !showPassword" tabindex="-1">
+            <i [class]="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+          </button>
+        </div>
+        @if (isInvalid('password')) {
+          <small class="field-error">กรุณากรอกรหัสผ่าน</small>
+        }
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full" [disabled]="loading">
+        @if (loading) { <span class="btn-spinner"></span> }
+        <i class="pi pi-sign-in"></i> เข้าสู่ระบบ
+      </button>
+    </form>
+
+    <div class="divider"><span>หรือ</span></div>
+
+    <div class="auth-footer">
+      <span>ยังไม่มีบัญชี?</span>
+      <a routerLink="/register" class="auth-link">สมัครสมาชิก</a>
+    </div>
+
+    <div class="demo-box">
+      <p class="demo-title">Demo Accounts:</p>
+      <p><i class="pi pi-shield"></i> Admin: admin&#64;food.com / Admin123!</p>
+      <p><i class="pi pi-user"></i> User: user&#64;food.com / User123!</p>
+    </div>
+  </div>
+  </div>
+</div>
